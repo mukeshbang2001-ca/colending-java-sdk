@@ -1,0 +1,6 @@
+com/credavenue/colending/api/LoanApiTest.class
+com/credavenue/colending/model/LoanTest.class
+com/credavenue/colending/model/InlineResponse400ErrorTest.class
+com/credavenue/colending/model/GetPaymentResponseTest.class
+com/credavenue/colending/model/InlineResponse400Test.class
+com/credavenue/colending/model/GetPaymentResponseApplicantsTest.class

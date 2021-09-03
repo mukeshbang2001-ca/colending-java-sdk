@@ -1,0 +1,1323 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: support@colending.com
+    name: API Support
+    url: http://credavenue.com
+  description: "# Integration Document\n\nThe following are the endpoints to be called\
+    \ during and pre/post disbursement state of a loan.\n\n## Authentication\n\nAuthentication\
+    \ details and host will be shared privately.\n\n## Workflow\n\n**Create Loan**\
+    \ is the initial endpoint to be called to create a loan. Loan will be processed\
+    \ in the background and the status of loan will be provided through the configured\
+    \ Webhook. However, the client can also poll the server via the **Get Loan Details**\
+    \ endpoint to know the loan's status(**Get Loan Details** is rate throttled and\
+    \ polling this API will be restricted). Loan's shall be considered rejected if\
+    \ proper response is not available within 10minutes.\n\nAll other endpoints are\
+    \ self-explanatory and can be retried upto 3 times before marking as failure.\n\
+    \n## Allowed Links\n\nAll Link attributes should contain\n1. Accessible File Link\
+    \ URL which can be Public/Expiry URL/Whitelisted File Server Link(Write to tech.colending@credavenue.com\
+    \ for obtaining our IP address to whitelist)\n2. File Link URL with Header Authentication\
+    \ (Header values should be shared with tech.colending@credavenue.com)\n\n## Allowed\
+    \ Fields Length\n<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"\
+    groups\" frame=\"hsides\">\n\n<colgroup>\n\n<col  class=\"org-left\" />\n\n<col\
+    \  class=\"org-left\" />\n\n</colgroup>\n<thead>\n<tr>\n<th scope=\"col\" class=\"\
+    org-left\">Data Type</th>\n<th scope=\"col\" class=\"org-left\">Max Length</th>\n\
+    </tr>\n</thead>\n\n<tbody>\n<tr>\n<td class=\"org-left\">String</td>\n<td class=\"\
+    org-left\">65,535 bytes</td>\n</tr>\n\n<tr>\n<td class=\"org-left\">Float</td>\n\
+    <td class=\"org-left\">8 bytes</td>\n</tr>\n\n<tr>\n<td class=\"org-left\">Integer</td>\n\
+    <td class=\"org-left\">4 bytes</td>\n</tr>\n\n<tr>\n<td class=\"org-left\">Date</td>\n\
+    <td class=\"org-left\">10 characters</td>\n</tr>\n\n</tbody>\n</table>\n\n# Webhooks\n\
+    \nWebhooks can be configured for the below events\n\n1. Loan status change\n\n\
+    \    Response Payload : \n    {\n        \"product_id\": \"\",\n        \"client_loan_id\"\
+    : \"\",\n        \"principal_amount\": \"\",\n        \"interest_rate\": \"\"\
+    ,\n        \"tenure\": \"\",\n        \"tenure_frequency\": \"MONTHLY\",\n   \
+    \     \"cibil_score\": \"\",\n        \"purpose\": \"\",\n        \"repayment_frequency\"\
+    :\"\",\n        \"number_of_repayments\": \"\",\n        \"status\": \"\",\n \
+    \       \"principal_outstanding\": \"\",\n        \"reject_reason\": \"\"\n  \
+    \  }\n    \n    Statuses : ['new', 'approved', 'rejected', 'agreement_signed',\
+    \ 'dropped', 'disbursement_ready', 'disbursed', 'matured', 'partner_settled']\n\
+    \   \n2. Loan disbursement details (Disbursed through razorpay)\n\n    Callback\
+    \ Payload: \n    {\n        \"client_loan_id\":\"\",\n        \"status\":\"borrower_disbursed\"\
+    ,\n        \"disbursed_date\":\"\",\n        \"utr_number\":\"\",\n        \"\
+    disbursement_type\":\"\",\n        \"payment_reversed\": \"TRUE/FALSE\",\n   \
+    \     \"disbursement_amount\":\"\",\n        \"investor_disbursed_amount\": \"\
+    \",\n        \"partner_disbursed_amount\": \"\",\n        \"differential_interest\"\
+    :\"\",\n        \"investor_differential_interest\":\"\",\n        \"partner_differential_interest\"\
+    :\"\",\n        \"differential_days\":\"\",\n        \"interest_start_date\":\"\
+    \",\n        \"investor_processing_fee\":\"\",\n        \"partner_processing_fee\"\
+    :\"\",\n        \"investor_stamp_duty\":\"\",\n        \"partner_stamp_duty\"\
+    :\"\",\n        \"investor_documentation_charges\":\"\",\n        \"partner_documentation_charges\"\
+    :\"\"\n    }\n\nProvide the following details to configure the webhooks\n1. callback\
+    \ URL\n2. authentication for the callback URL (header authentication)\n\n\n\n\
+    # Validations\n\n**PAN**\n\n- **Example**: ABGPA1232P\n- **Sequence**: First five\
+    \ digits will be alpha, next four will be Numerical and again last single digit\
+    \ will be alpha\n\n**GSTIN**\n\n- **Example**: 33AAACT2727Q1ZV\n- **Sequence**:\
+    \ First two digits is Numerical, Next is PAN sequence as specified above, again\
+    \ thirteenth digit will be numerical, fourteenth digit is alpha, last digit will\
+    \ be alpha or numerical\n\n**CIN**\n\n- **Example**: U65929TN2017PTC117196\n-\
+    \ **Sequence**: First digit is Alpha, next 5 numeric digits, next two alpha, next\
+    \ set of 4 numeric digits, Next 3 alpha, last 6 numeric digits\n\n**PASSPORT**\n\
+    \n- **Example**: A2096457\n- **Sequence**: Total 8 digits, first digit is Alpha,\
+    \ remaining digits are numerical\n\n**AADHAR NO**\n\n- The standard 12 digits\
+    \ numerical.\n\n**MOBILE NO**\n\n- **Sequence**: 10 numerical digits\n\n**IFSC\
+    \ CODE**\n\n- **Example**: PUNB0596600\n- **Sequence**: First four alpha, next\
+    \ fifth digit is 0 (zero) always and last six digit is alpha/numeric. Totally\
+    \ 11 digits.\n\n**PIN CODE**\n\n- 6 numerical digits"
+  title: ColendingTitle (ColendingTitle..)
+  version: 1.0.1
+servers:
+- url: '{host}'
+  variables:
+    host:
+      default: https://colend-uat-01-api.credavenue.in/colending
+      description: For UAT environment
+- description: Local
+  url: http://localhost:3000/colending
+- description: Production
+  url: https://colend-api.credavenue.com/colending
+security:
+- api_key: []
+tags:
+- description: Everything about Loans
+  name: Loan
+- description: Everything about interest accural
+  name: interest_accrual
+paths:
+  /clients/{client_name}/api/v2/loans:
+    post:
+      description: "# Create Loan \n\nThis API endpoint can be used to create a loan.\n\
+        \ninterest_rate: Rate of interest percent per annum\n\nAll link fields should\
+        \ have a valid accessible URL or \"NA\".\n\nStates should be in INDIAN_STATES\
+        \ array (refer at the end of the table).\n\n \n<h4>Request Parameters</h4>\n\
+        \n<table>\n  <thead>\n    <tr>\n      <th>Field</th>\n      <th>Type</th>\n\
+        \      <th>Format</th>\n      <th>Required</th>\n      <th>Description</th>\n\
+        \      <th>Example</th>\n    </tr>\n  </thead>\n  <tbody>      <tr>\n    <td>client_customer_id</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Customer ID\
+        \ as per Partner&#39;s CRM/LOS</td>\n      <td>client_customer_id_59</td>\
+        \ \n</tr> \n      <tr>\n    <td>client_loan_id</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Loan ID as per Partner&#39;s LMS</td>\n\
+        \      <td>client_loan_id_60</td> \n</tr> \n      <tr>\n    <td>application_id</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Application\
+        \ ID as per Partner&#39;s CRM/LOS</td>\n      <td>application_id_74</td> \n\
+        </tr> \n      <tr>\n    <td>partner_branch_code</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Branch Code as per Partner&#39;s\
+        \ LOS</td>\n      <td>partner_branch_code_37</td> \n</tr> \n      <tr>\n \
+        \   <td>partner_branch_name</td>\n    <td>string</td>\n    <td></td>\n   \
+        \ <td>false</td>\n    <td>Branch Name as per Partner&#39;s LOS</td>\n    \
+        \  <td>partner_branch_name_19</td> \n</tr> \n      <tr>\n    <td>product_type</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td></td>\n  \
+        \    <td>product_type_97</td> \n</tr> \n      <tr>\n    <td>product_id</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Product Code\
+        \ in Co-Lending</td>\n      <td>product_id_55</td> \n</tr> \n      <tr>\n\
+        \    <td>scheme_code</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td></td>\n      <td>scheme_code_23</td> \n</tr> \n      <tr>\n    <td>loan_type</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Secured /\
+        \ Unsecured</td>\n      <td>loan_type_86</td> \n</tr> \n      <tr>\n    <td>loan_subtype</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>BT / Top Loan\
+        \ / Fresh</td>\n      <td>loan_subtype_61</td> \n</tr> \n      <tr>\n    <td>purpose</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Free flowing\
+        \ text</td>\n      <td>purpose_61</td> \n</tr> \n      <tr>\n    <td>disbursement_type</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Tranche /\
+        \ Single</td>\n      <td>disbursement_type_83</td> \n</tr> \n      <tr>\n\
+        \    <td>end_borrower_amount</td>\n    <td>number</td>\n    <td>float</td>\n\
+        \    <td>false</td>\n    <td>In case of multiple disbursals</td>\n      <td>4.485466818772893</td>\
+        \ \n</tr> \n      <tr>\n    <td>existing_lender_amount</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>false</td>\n    <td>In case of multiple disbursals</td>\n\
+        \      <td>4.621762163902195</td> \n</tr> \n      <tr>\n    <td>principal_amount</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>true</td>\n    <td>Total\
+        \ Loan Amount to the Borrower (in Rupees)</td>\n      <td>6.18164003973583</td>\
+        \ \n</tr> \n      <tr>\n    <td>interest_rate</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>true</td>\n    <td>Reducing balance interest\
+        \ rate of the customer in %. This is the interest rate to be mentioned in\
+        \ the sanction letter as well</td>\n      <td>7.815712851122801</td> \n</tr>\
+        \ \n      <tr>\n    <td>tenure</td>\n    <td>integer</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Tenure of the loan</td>\n      <td>371</td> \n\
+        </tr> \n      <tr>\n    <td>tenure_frequency</td>\n    <td>string</td>\n \
+        \   <td></td>\n    <td>true</td>\n    <td>Daily / Weekly / Monthly</td>\n\
+        \      <td>tenure_frequency_84</td> \n</tr> \n      <tr>\n    <td>repayment_frequency</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Daily / Weekly\
+        \ / Monthly / Bullet</td>\n      <td>repayment_frequency_67</td> \n</tr> \n\
+        \      <tr>\n    <td>number_of_repayments</td>\n    <td>integer</td>\n   \
+        \ <td></td>\n    <td>true</td>\n    <td>Number of repayments as per the repayment\
+        \ schedule</td>\n      <td>286</td> \n</tr> \n      <tr>\n    <td>first_repayment_date</td>\n\
+        \    <td>string</td>\n    <td>date</td>\n    <td>false</td>\n    <td>First\
+        \ repayment date as per the repayment schedule (YYYY-MM-DD)</td>\n      <td>2011-10-26</td>\
+        \ \n</tr> \n      <tr>\n    <td>repayment_mode</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Cash / NACH</td>\n      <td>repayment_mode_30</td>\
+        \ \n</tr> \n      <tr>\n    <td>advance_emi</td>\n    <td>number</td>\n  \
+        \  <td>float</td>\n    <td>false</td>\n    <td>Advance EMI Amount (If collected\
+        \ any)</td>\n      <td>3.2912590730003135</td> \n</tr> \n      <tr>\n    <td>umrn</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>To update\
+        \ if UMRN generated at this stage, else in PDD stage</td>\n      <td>umrn_74</td>\
+        \ \n</tr> \n      <tr>\n    <td>differential_days</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Broken Period (in Days)</td>\n\
+        \      <td>553</td> \n</tr> \n      <tr>\n    <td>differential_interest</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>false</td>\n    <td>Broken\
+        \ Period Interest Amount (in Rupees)</td>\n      <td>9.691280269328699</td>\
+        \ \n</tr> \n      <tr>\n    <td>processing_fee_amount</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>false</td>\n    <td>Processing Fee (Inclusive\
+        \ of GST)</td>\n      <td>4.407537723264591</td> \n</tr> \n      <tr>\n  \
+        \  <td>stamp_duty_fee_amount</td>\n    <td>number</td>\n    <td>float</td>\n\
+        \    <td>false</td>\n    <td></td>\n      <td>6.493097519132346</td> \n</tr>\
+        \ \n      <tr>\n    <td>insurance_premium_amount</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>false</td>\n    <td>Insurance Premium (Inclusive\
+        \ of GST)</td>\n      <td>8.038655560400812</td> \n</tr> \n      <tr>\n  \
+        \  <td>documentation_fee_amount</td>\n    <td>number</td>\n    <td>float</td>\n\
+        \    <td>false</td>\n    <td>Documentation Charges (Inclusive of GST)</td>\n\
+        \      <td>8.937644664109786</td> \n</tr> \n      <tr>\n    <td>other_charges</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>false</td>\n    <td>Any\
+        \ Other Charges (Inclusive of GST)</td>\n      <td>0.8221387645558687</td>\
+        \ \n</tr> \n      <tr>\n    <td>customer_type</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Individual / Non-Individual</td>\n\
+        \      <td>customer_type_76</td> \n</tr> \n      <tr>\n    <td>customer_category</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Salaried /\
+        \ Self-Empolyed</td>\n      <td>customer_category_31</td> \n</tr> \n     \
+        \ <tr>\n    <td>first_name</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>First Name of the Customer</td>\n      <td>first_name_96</td> \n\
+        </tr> \n      <tr>\n    <td>middle_name</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Middle Name of the Customer</td>\n      <td>middle_name_25</td>\
+        \ \n</tr> \n      <tr>\n    <td>last_name</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Last Name of the Customer</td>\n      <td>last_name_12</td>\
+        \ \n</tr> \n      <tr>\n    <td>gender</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>M / F / O</td>\n      <td>gender_54</td> \n</tr>\
+        \ \n      <tr>\n    <td>date_of_birth</td>\n    <td>string</td>\n    <td>date</td>\n\
+        \    <td>true</td>\n    <td>Date of Birth (YYYY-MM-DD)</td>\n      <td>2012-10-21</td>\
+        \ \n</tr> \n      <tr>\n    <td>age</td>\n    <td>integer</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Age in years</td>\n      <td>561</td> \n</tr>\
+        \ \n      <tr>\n    <td>mobile_number</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Mobile Number of the Customer (10 digits)</td>\n\
+        \      <td>mobile_number_77</td> \n</tr> \n      <tr>\n    <td>personal_email_id</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Personal Email\
+        \ ID of the Customer</td>\n      <td>personal_email_id_68</td> \n</tr> \n\
+        \      <tr>\n    <td>official_email_id</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Official Email ID of the Customer</td>\n     \
+        \ <td>official_email_id_91</td> \n</tr> \n      <tr>\n    <td>current_address</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Free flowing\
+        \ text</td>\n      <td>current_address_99</td> \n</tr> \n      <tr>\n    <td>current_city</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>City in which\
+        \ applicant is currently residing</td>\n      <td>current_city_95</td> \n\
+        </tr> \n      <tr>\n    <td>current_district</td>\n    <td>string</td>\n \
+        \   <td></td>\n    <td>true</td>\n    <td>District in which applicant is currently\
+        \ residing</td>\n      <td>current_district_66</td> \n</tr> \n      <tr>\n\
+        \    <td>current_state</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>State in which applicant is currently residing</td>\n      <td>current_state_98</td>\
+        \ \n</tr> \n      <tr>\n    <td>current_pincode</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Pincode of the current address</td>\n\
+        \      <td>578</td> \n</tr> \n      <tr>\n    <td>residence_type_current_address</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Rented / Owned\
+        \ / Leased</td>\n      <td>residence_type_current_address_74</td> \n</tr>\
+        \ \n      <tr>\n    <td>years_of_stay_in_current_address</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>How many years stayed in the current\
+        \ address</td>\n      <td>484</td> \n</tr> \n      <tr>\n    <td>permanent_address</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Free flowing\
+        \ text</td>\n      <td>permanent_address_25</td> \n</tr> \n      <tr>\n  \
+        \  <td>permanent_city</td>\n    <td>string</td>\n    <td></td>\n    <td>false</td>\n\
+        \    <td>City in which applicant is currently residing</td>\n      <td>permanent_city_23</td>\
+        \ \n</tr> \n      <tr>\n    <td>permanent_district</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>District in which applicant is\
+        \ currently residing</td>\n      <td>permanent_district_11</td> \n</tr> \n\
+        \      <tr>\n    <td>permanent_state</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>State in which applicant is currently residing</td>\n\
+        \      <td>permanent_state_44</td> \n</tr> \n      <tr>\n    <td>permanent_pincode</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Pincode\
+        \ of the current address</td>\n      <td>341</td> \n</tr> \n      <tr>\n \
+        \   <td>residence_type_permanent_address</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Rented / Owned / Leased</td>\n      <td>residence_type_permanent_address_98</td>\
+        \ \n</tr> \n      <tr>\n    <td>years_of_stay_in_permanent_address</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>true</td>\n    <td>How many\
+        \ years stayed in the permanent address</td>\n      <td>554</td> \n</tr> \n\
+        \      <tr>\n    <td>marital_status</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Married / Unmarried</td>\n      <td>marital_status_13</td>\
+        \ \n</tr> \n      <tr>\n    <td>religion</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Religion of the Customer</td>\n      <td>religion_78</td>\
+        \ \n</tr> \n      <tr>\n    <td>nationality</td>\n    <td>string</td>\n  \
+        \  <td></td>\n    <td>true</td>\n    <td>Nationality of the Customer</td>\n\
+        \      <td>nationality_76</td> \n</tr> \n      <tr>\n    <td>father_name</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Father Name\
+        \ of the Customer</td>\n      <td>father_name_93</td> \n</tr> \n      <tr>\n\
+        \    <td>mother_name</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>Mother Name of the Customer</td>\n      <td>mother_name_13</td> \n\
+        </tr> \n      <tr>\n    <td>spouse_name</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Spouse Name of the Customer</td>\n      <td>spouse_name_30</td>\
+        \ \n</tr> \n      <tr>\n    <td>education_qualification</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Free flowing text</td>\n      <td>education_qualification_96</td>\
+        \ \n</tr> \n      <tr>\n    <td>net_monthly_income</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>true</td>\n    <td>Monthly Income of the Customer\
+        \ (in Rupees)</td>\n      <td>9.22756108537898</td> \n</tr> \n      <tr>\n\
+        \    <td>annual_income</td>\n    <td>number</td>\n    <td>float</td>\n   \
+        \ <td>true</td>\n    <td>Annual Income of the Customer (in Rupees)</td>\n\
+        \      <td>2.2183198848473564</td> \n</tr> \n      <tr>\n    <td>number_of_dependants</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td></td>\n\
+        \      <td>142</td> \n</tr> \n      <tr>\n    <td>occupation</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Salaried / Business / Retired\
+        \ / Self-Employed / Others</td>\n      <td>occupation_82</td> \n</tr> \n \
+        \     <tr>\n    <td>pan_number</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>PAN Number of the Customer (10 digit Alphanumeric)</td>\n\
+        \      <td>pan_number_75</td> \n</tr> \n      <tr>\n    <td>pan_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>true</td>\n    <td>PAN Document\
+        \ Link</td>\n      <td>[&quot;pan_link_11&quot;, &quot;pan_link_91&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>form_60_link</td>\n    <td>array</td>\n  \
+        \  <td></td>\n    <td>false</td>\n    <td>Form 60 Doument Link (If applicable)</td>\n\
+        \      <td>[&quot;form_60_link_10&quot;, &quot;form_60_link_11&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>aadhar_number</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Aadhar Number of the Customer\
+        \ (12 digits)</td>\n      <td>aadhar_number_90</td> \n</tr> \n      <tr>\n\
+        \    <td>aadhar_link</td>\n    <td>array</td>\n    <td></td>\n    <td>false</td>\n\
+        \    <td>Aadhar Document Link</td>\n      <td>[&quot;aadhar_link_98&quot;,\
+        \ &quot;aadhar_link_50&quot;]</td> \n</tr> \n      <tr>\n    <td>voter_id_number</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>false</td>\n    <td>Voter ID\
+        \ Number of the Customer</td>\n      <td>voter_id_number_38</td> \n</tr> \n\
+        \      <tr>\n    <td>voting_id_link</td>\n    <td>array</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Voter Document Link</td>\n      <td>[&quot;voting_id_link_92&quot;,\
+        \ &quot;voting_id_link_86&quot;]</td> \n</tr> \n      <tr>\n    <td>driving_license_number</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>false</td>\n    <td>Driving License\
+        \ Number of the Customer</td>\n      <td>driving_license_number_70</td> \n\
+        </tr> \n      <tr>\n    <td>driving_license_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Driving License Document Link</td>\n\
+        \      <td>[&quot;driving_license_link_72&quot;, &quot;driving_license_link_12&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>passport_number</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Passport Number of the Customer</td>\n\
+        \      <td>passport_number_24</td> \n</tr> \n      <tr>\n    <td>passport_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>Passport Document\
+        \ Link</td>\n      <td>[&quot;passport_link_11&quot;, &quot;passport_link_49&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>video_image_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Video Image of the Applicant</td>\n\
+        \      <td>[&quot;video_image_link_72&quot;, &quot;video_image_link_60&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>video_kyc_detail</td>\n    <td>object</td>\n\
+        \    <td></td>\n    <td></td>\n    <td>Video KYC Detail of the Applicant</td>\n\
+        \      <td>{&quot;profile_id&quot;:&quot;profile_id_50&quot;,&quot;account_id&quot;:&quot;account_id_61&quot;,&quot;key&quot;:&quot;key_17&quot;}</td>\
+        \ \n</tr> \n      <tr>\n    <td>other_kyc_number</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>KYC Number of the Customer</td>\n\
+        \      <td>other_kyc_number_16</td> \n</tr> \n      <tr>\n    <td>other_kyc_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>KYC Image\
+        \ of the Customer</td>\n      <td>[&quot;other_kyc_link_85&quot;, &quot;other_kyc_link_48&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>rent_agreement_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Rent Agreement Document Link</td>\n\
+        \      <td>[&quot;rent_agreement_link_23&quot;, &quot;rent_agreement_link_97&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>utility_bills_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Utility Bills Copies (If any)</td>\n\
+        \      <td>[&quot;utility_bills_link_47&quot;, &quot;utility_bills_link_19&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>photo_link</td>\n    <td>array</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Photo Image of the Customer</td>\n      <td>[&quot;photo_link_10&quot;,\
+        \ &quot;photo_link_26&quot;]</td> \n</tr> \n      <tr>\n    <td>employment_type</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Salaried /\
+        \ Self-Employed</td>\n      <td>employment_type_49</td> \n</tr> \n      <tr>\n\
+        \    <td>employment_details_name</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td></td>\n      <td>employment_details_name_13</td>\
+        \ \n</tr> \n      <tr>\n    <td>employment_details_address</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td></td>\n      <td>employment_details_address_29</td>\
+        \ \n</tr> \n      <tr>\n    <td>employment_details_years_of_experience</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>true</td>\n    <td>Applicant&#39;s\
+        \ years of experience in the current organization</td>\n      <td>8.36375328630942</td>\
+        \ \n</tr> \n      <tr>\n    <td>employment_details_designation</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Applicant&#39;s Current Designation</td>\n\
+        \      <td>employment_details_designation_89</td> \n</tr> \n      <tr>\n \
+        \   <td>employement_vintage_current_organisation</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Vintage</td>\n      <td>employement_vintage_current_organisation_72</td>\
+        \ \n</tr> \n      <tr>\n    <td>payslip_link</td>\n    <td>array</td>\n  \
+        \  <td></td>\n    <td>true</td>\n    <td>Last 3 Months Payslips</td>\n   \
+        \   <td>[&quot;payslip_link_25&quot;, &quot;payslip_link_12&quot;]</td> \n\
+        </tr> \n      <tr>\n    <td>tds_certificate_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Last 3 Years TDS Certificate</td>\n\
+        \      <td>[&quot;tds_certificate_link_47&quot;, &quot;tds_certificate_link_14&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>name_of_bureau</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>CIBIL / Experian / Himark</td>\n\
+        \      <td>name_of_bureau_50</td> \n</tr> \n      <tr>\n    <td>bureau_vintage</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Vintage\
+        \ in the bureau. Number of years from the first trade line</td>\n      <td>794</td>\
+        \ \n</tr> \n      <tr>\n    <td>bureau_score</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td></td>\n      <td>614</td> \n</tr>\
+        \ \n      <tr>\n    <td>bureau_report_link</td>\n    <td>array</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Bureau Report PDF</td>\n      <td>[&quot;bureau_report_link_70&quot;,\
+        \ &quot;bureau_report_link_42&quot;]</td> \n</tr> \n      <tr>\n    <td>commercial_bureau_score</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>true</td>\n    <td></td>\n \
+        \     <td>618</td> \n</tr> \n      <tr>\n    <td>commercial_bureau_score_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>true</td>\n    <td>Commercial\
+        \ Bureau Document</td>\n      <td>[&quot;commercial_bureau_score_link_74&quot;,\
+        \ &quot;commercial_bureau_score_link_53&quot;]</td> \n</tr> \n      <tr>\n\
+        \    <td>partner_score_on_the_customer</td>\n    <td>integer</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Score Captured by the Partner</td>\n      <td>108</td>\
+        \ \n</tr> \n      <tr>\n    <td>total_existing_obligations</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Total Existing Obligations basis\
+        \ the Bureau Report</td>\n      <td>432</td> \n</tr> \n      <tr>\n    <td>credit_card_limit</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Total Credit\
+        \ Card Limit basis the Bureau Report</td>\n      <td>757</td> \n</tr> \n \
+        \     <tr>\n    <td>number_of_credit_cards</td>\n    <td>integer</td>\n  \
+        \  <td></td>\n    <td>false</td>\n    <td>Total Number of Credit Cards per\
+        \ Bureau Report</td>\n      <td>977</td> \n</tr> \n      <tr>\n    <td>number_of_unsecured_loans</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Total Number\
+        \ of Unsecured Loans per Bureau Report</td>\n      <td>974</td> \n</tr> \n\
+        \      <tr>\n    <td>value_of_total_unsecured_loans</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>false</td>\n    <td></td>\n      <td>9.866919779039508</td>\
+        \ \n</tr> \n      <tr>\n    <td>number_of_loans</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Total Number of Loans per Bureau\
+        \ Report</td>\n      <td>589</td> \n</tr> \n      <tr>\n    <td>value_of_total_loans</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>false</td>\n    <td></td>\n\
+        \      <td>3.197758615020083</td> \n</tr> \n      <tr>\n    <td>number_of_enquiries_3months</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Number of\
+        \ Enquiries in the Last 3 Months per Bureau Report</td>\n      <td>144</td>\
+        \ \n</tr> \n      <tr>\n    <td>number_of_enquiries_6months</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Number of Enquiries in the Last\
+        \ 6 Months per Bureau Report</td>\n      <td>966</td> \n</tr> \n      <tr>\n\
+        \    <td>number_of_enquiries_12months</td>\n    <td>integer</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Number of Enquiries in the Last 12 Months per\
+        \ Bureau Report</td>\n      <td>986</td> \n</tr> \n      <tr>\n    <td>number_of_writeoff_suitfiled_settled_12months</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Number of\
+        \ Writeoff Suitfiled Settled in the Last 12 Months</td>\n      <td>194</td>\
+        \ \n</tr> \n      <tr>\n    <td>max_dpd_tradeline_12months</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Maximum DPD Tradeline in the Last\
+        \ 12 Months</td>\n      <td>167</td> \n</tr> \n      <tr>\n    <td>max_overdue_tradeline</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Maximum\
+        \ Overdue Tradeline</td>\n      <td>750</td> \n</tr> \n      <tr>\n    <td>total_overdue_amount_12months</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>true</td>\n    <td>Total\
+        \ Overdue Amount in the Last 12 Months</td>\n      <td>9.021829304636487</td>\
+        \ \n</tr> \n      <tr>\n    <td>loan_amount_settled_12months</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>true</td>\n    <td>Loan Amount Settled in the\
+        \ Last 12 Months</td>\n      <td>7.976736043465037</td> \n</tr> \n      <tr>\n\
+        \    <td>nature_of_loan_settled_1</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td></td>\n      <td>nature_of_loan_settled_1_96</td>\
+        \ \n</tr> \n      <tr>\n    <td>nature_of_loan_settled_2</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td></td>\n      <td>nature_of_loan_settled_2_96</td>\
+        \ \n</tr> \n      <tr>\n    <td>total_emi_bounces</td>\n    <td>integer</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td></td>\n      <td>416</td> \n</tr>\
+        \ \n      <tr>\n    <td>emi_bounces_6months</td>\n    <td>integer</td>\n \
+        \   <td></td>\n    <td>true</td>\n    <td>EMI Bounces in the Last 6 Months</td>\n\
+        \      <td>221</td> \n</tr> \n      <tr>\n    <td>emi_bounces_12months</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>EMI Bounces\
+        \ in the Last 12 Months</td>\n      <td>725</td> \n</tr> \n      <tr>\n  \
+        \  <td>bank_statement</td>\n    <td>object</td>\n    <td></td>\n    <td></td>\n\
+        \    <td></td>\n      <td>{&quot;bank_statement_savings_account_12_months_link&quot;:[&quot;bank_statement_savings_account_12_months_link_62&quot;,&quot;bank_statement_savings_account_12_months_link_45&quot;],&quot;bank_statement_current_account_12_months_link&quot;:[&quot;bank_statement_current_account_12_months_link_17&quot;,&quot;bank_statement_current_account_12_months_link_30&quot;],&quot;no_of_inward_chq_returns_savings_account&quot;:[77,148],&quot;no_of_outward_chq_returns_savings_account&quot;:[621,595],&quot;no_of_inward_chq_returns_current_account&quot;:[73,144],&quot;no_of_outward_chq_returns_current_account&quot;:[501,794],&quot;bank_account_type_for_assessment&quot;:&quot;bank_account_type_for_assessment_70&quot;,&quot;perfios_link&quot;:&quot;{}&quot;,&quot;finbit_link&quot;:&quot;{}&quot;,&quot;abb&quot;:8.199945172877836,&quot;abd&quot;:3.2667320194333094}</td>\
+        \ \n</tr> \n      <tr>\n    <td>financial_data</td>\n    <td>object</td>\n\
+        \    <td></td>\n    <td></td>\n    <td>Annual Business Turnover (in Rupees)</td>\n\
+        \      <td>{&quot;annual_business_turnover&quot;:3.6593859085310143,&quot;annual_gross_profit&quot;:4.369981479224224,&quot;annual_business_ebitda&quot;:2.071382428611548,&quot;monthly_net_profit&quot;:4.863932878799789,&quot;annual_net_profit&quot;:6.563977222971854,&quot;gst_return_year_1_link&quot;:[&quot;gst_return_year_1_link_100&quot;,&quot;gst_return_year_1_link_46&quot;],&quot;gst_return_year_2_link&quot;:[&quot;gst_return_year_2_link_29&quot;,&quot;gst_return_year_2_link_60&quot;],&quot;gst_return_year_3_link&quot;:[&quot;gst_return_year_3_link_14&quot;,&quot;gst_return_year_3_link_96&quot;],&quot;it_return_year_1_link&quot;:[&quot;it_return_year_1_link_45&quot;,&quot;it_return_year_1_link_14&quot;],&quot;it_return_year_2_link&quot;:[&quot;it_return_year_2_link_63&quot;,&quot;it_return_year_2_link_39&quot;],&quot;it_return_year_3_link&quot;:[&quot;it_return_year_3_link_51&quot;,&quot;it_return_year_3_link_94&quot;],&quot;other_income_assessment_proof_link&quot;:[&quot;other_income_assessment_proof_link_80&quot;,&quot;other_income_assessment_proof_link_81&quot;],&quot;cam_link&quot;:[&quot;cam_link_43&quot;,&quot;cam_link_15&quot;],&quot;cfa_link&quot;:[&quot;cfa_link_45&quot;,&quot;cfa_link_16&quot;]}</td>\
+        \ \n</tr> \n      <tr>\n    <td>co_applicants</td>\n    <td>array</td>\n \
+        \   <td></td>\n    <td>true</td>\n    <td>Refer table co_applicants for attributes</td>\n\
+        \      <td></td> \n</tr> \n      <tr>\n    <td>abb_emi_ratio</td>\n    <td>number</td>\n\
+        \    <td>float</td>\n    <td>true</td>\n    <td></td>\n      <td>3.4130913651820793</td>\
+        \ \n</tr> \n      <tr>\n    <td>dscr</td>\n    <td>number</td>\n    <td>float</td>\n\
+        \    <td>true</td>\n    <td>Debt Service Coverage Ratio</td>\n      <td>5.376191309907835</td>\
+        \ \n</tr> \n      <tr>\n    <td>foir</td>\n    <td>number</td>\n    <td>float</td>\n\
+        \    <td>true</td>\n    <td>Fixed Obligations to Income Ratio</td>\n     \
+        \ <td>1.6720081484121985</td> \n</tr> \n      <tr>\n    <td>ltr</td>\n   \
+        \ <td>number</td>\n    <td>float</td>\n    <td>true</td>\n    <td>Loan Transfer\
+        \ Ratio</td>\n      <td>9.77892781806729</td> \n</tr> \n      <tr>\n    <td>eligibility_loan_amount</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>false</td>\n    <td></td>\n\
+        \      <td>7.204682589645141</td> \n</tr> \n      <tr>\n    <td>insurance_details</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>Refer table\
+        \ insurance_details for attributes</td>\n      <td></td> \n</tr> \n      <tr>\n\
+        \    <td>references</td>\n    <td>array</td>\n    <td></td>\n    <td>false</td>\n\
+        \    <td>Refer table references for attributes</td>\n      <td></td> \n</tr>\
+        \ \n      <tr>\n    <td>psl_flag</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td></td>\n      <td>psl_flag_44</td> \n</tr> \n \
+        \     <tr>\n    <td>psl_description</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td></td>\n      <td>psl_description_25</td> \n</tr>\
+        \ \n      <tr>\n    <td>psl_code</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td></td>\n      <td>psl_code_61</td> \n</tr> \n \
+        \     <tr>\n    <td>psl_proof_link</td>\n    <td>array</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td></td>\n      <td>[&quot;psl_proof_link_12&quot;,\
+        \ &quot;psl_proof_link_36&quot;]</td> \n</tr> \n      <tr>\n    <td>disbursement_accounts</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>Refer table\
+        \ disbursement_accounts for attributes</td>\n      <td></td> \n</tr> \n  </tbody>\n\
+        \      </table>\n\n\n<h4>CoApplicants</h4>\n\n<table>\n  <thead>\n    <tr>\n\
+        \      <th>Field</th>\n      <th>Type</th>\n      <th>Format</th>\n      <th>Required</th>\n\
+        \      <th>Description</th>\n      <th>Example</th>\n    </tr>\n  </thead>\n\
+        \  <tbody>      <tr>\n    <td>relationship_with_applicant</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td></td>\n      <td>relationship_with_applicant_28</td>\
+        \ \n</tr> \n      <tr>\n    <td>first_name</td>\n    <td>string</td>\n   \
+        \ <td></td>\n    <td>true</td>\n    <td>First Name of the CoApplicant</td>\n\
+        \      <td>first_name_55</td> \n</tr> \n      <tr>\n    <td>middle_name</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>false</td>\n    <td>Middle Name\
+        \ of the CoApplicant</td>\n      <td>middle_name_50</td> \n</tr> \n      <tr>\n\
+        \    <td>last_name</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>Last Name of the CoApplicant</td>\n      <td>last_name_83</td> \n\
+        </tr> \n      <tr>\n    <td>gender</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>M / F / O</td>\n      <td>gender_64</td> \n</tr>\
+        \ \n      <tr>\n    <td>date_of_birth</td>\n    <td>string</td>\n    <td>date</td>\n\
+        \    <td>true</td>\n    <td>Date of Birth (YYYY-MM-DD)</td>\n      <td>2020-05-25</td>\
+        \ \n</tr> \n      <tr>\n    <td>age</td>\n    <td>integer</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Age in years</td>\n      <td>71</td> \n</tr>\
+        \ \n      <tr>\n    <td>mobile_number</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Mobile Number of the CoApplicant (10 digits)</td>\n\
+        \      <td>mobile_number_21</td> \n</tr> \n      <tr>\n    <td>email</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Personal Email\
+        \ ID of the CoApplicant</td>\n      <td>email_92</td> \n</tr> \n      <tr>\n\
+        \    <td>current_address</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>Free flowing text</td>\n      <td>current_address_54</td> \n</tr>\
+        \ \n      <tr>\n    <td>current_city</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>City in which CoApplicant is currently residing</td>\n\
+        \      <td>current_city_28</td> \n</tr> \n      <tr>\n    <td>current_district</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>District in\
+        \ which CoApplicant is currently residing</td>\n      <td>current_district_15</td>\
+        \ \n</tr> \n      <tr>\n    <td>current_state</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>State in which CoApplicant is currently\
+        \ residing</td>\n      <td>current_state_95</td> \n</tr> \n      <tr>\n  \
+        \  <td>current_pincode</td>\n    <td>integer</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>Pincode of the current address</td>\n      <td>222</td> \n</tr> \n\
+        \      <tr>\n    <td>residence_type_current_address</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>true</td>\n    <td>Rented / Owned / Leased</td>\n\
+        \      <td>residence_type_current_address_62</td> \n</tr> \n      <tr>\n \
+        \   <td>years_of_stay_in_current_address</td>\n    <td>integer</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>How many years stayed in the current address</td>\n\
+        \      <td>571</td> \n</tr> \n      <tr>\n    <td>permanent_address</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>false</td>\n    <td>Free flowing\
+        \ text</td>\n      <td>permanent_address_36</td> \n</tr> \n      <tr>\n  \
+        \  <td>permanent_city</td>\n    <td>string</td>\n    <td></td>\n    <td>false</td>\n\
+        \    <td>City in which CoApplicant is currently residing</td>\n      <td>permanent_city_95</td>\
+        \ \n</tr> \n      <tr>\n    <td>permanent_district</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>District in which CoApplicant\
+        \ is currently residing</td>\n      <td>permanent_district_52</td> \n</tr>\
+        \ \n      <tr>\n    <td>permanent_state</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>State in which CoApplicant is currently residing</td>\n\
+        \      <td>permanent_state_28</td> \n</tr> \n      <tr>\n    <td>permanent_pincode</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Pincode\
+        \ of the current address</td>\n      <td>723</td> \n</tr> \n      <tr>\n \
+        \   <td>residence_type_permanent_address</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Rented / Owned / Leased</td>\n      <td>residence_type_permanent_address_30</td>\
+        \ \n</tr> \n      <tr>\n    <td>years_of_stay_in_permanent_address</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>true</td>\n    <td>How many\
+        \ years stayed in the permanent address</td>\n      <td>852</td> \n</tr> \n\
+        \      <tr>\n    <td>marital_status</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Married / Unmarried</td>\n      <td>marital_status_12</td>\
+        \ \n</tr> \n      <tr>\n    <td>religion</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Religion of the CoApplicant</td>\n      <td>religion_26</td>\
+        \ \n</tr> \n      <tr>\n    <td>nationality</td>\n    <td>string</td>\n  \
+        \  <td></td>\n    <td>false</td>\n    <td>Nationality of the CoApplicant</td>\n\
+        \      <td>nationality_19</td> \n</tr> \n      <tr>\n    <td>father_name</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Father Name\
+        \ of the CoApplicant</td>\n      <td>father_name_59</td> \n</tr> \n      <tr>\n\
+        \    <td>mother_name</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>Mother Name of the CoApplicant</td>\n      <td>mother_name_19</td>\
+        \ \n</tr> \n      <tr>\n    <td>spouse_name</td>\n    <td>string</td>\n  \
+        \  <td></td>\n    <td>false</td>\n    <td>Spouse Name of the CoApplicant</td>\n\
+        \      <td>spouse_name_77</td> \n</tr> \n      <tr>\n    <td>education_qualification</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Free flowing\
+        \ text</td>\n      <td>education_qualification_41</td> \n</tr> \n      <tr>\n\
+        \    <td>annual_income</td>\n    <td>number</td>\n    <td>float</td>\n   \
+        \ <td>false</td>\n    <td>Annual Income of the CoApplicant (in Rupees)</td>\n\
+        \      <td>4.967779401178519</td> \n</tr> \n      <tr>\n    <td>income_proof_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td></td>\n  \
+        \    <td>[&quot;income_proof_link_17&quot;, &quot;income_proof_link_18&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>bank_statement_12_months_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Savings / Current Bank Account\
+        \ Statement for the Last 12 Months</td>\n      <td>[&quot;bank_statement_12_months_link_92&quot;,\
+        \ &quot;bank_statement_12_months_link_59&quot;]</td> \n</tr> \n      <tr>\n\
+        \    <td>pan_number</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>PAN Number of the CoApplicant (10 digit Alphanumeric)</td>\n    \
+        \  <td>pan_number_45</td> \n</tr> \n      <tr>\n    <td>pan_link</td>\n  \
+        \  <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>PAN Document\
+        \ Link</td>\n      <td>[&quot;pan_link_99&quot;, &quot;pan_link_52&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>aadhar_number</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Aadhar Number of the CoApplicant\
+        \ (12 digits)</td>\n      <td>aadhar_number_14</td> \n</tr> \n      <tr>\n\
+        \    <td>aadhar_link</td>\n    <td>array</td>\n    <td></td>\n    <td>false</td>\n\
+        \    <td>Aadhar Document Link</td>\n      <td>[&quot;aadhar_link_87&quot;,\
+        \ &quot;aadhar_link_43&quot;]</td> \n</tr> \n      <tr>\n    <td>voter_id_number</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>false</td>\n    <td>Voter ID\
+        \ Number of the CoApplicant</td>\n      <td>voter_id_number_41</td> \n</tr>\
+        \ \n      <tr>\n    <td>voting_id_link</td>\n    <td>array</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Voter Document Link</td>\n      <td>[&quot;voting_id_link_27&quot;,\
+        \ &quot;voting_id_link_58&quot;]</td> \n</tr> \n      <tr>\n    <td>driving_license_number</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>false</td>\n    <td>Driving License\
+        \ Number of the CoApplicant</td>\n      <td>driving_license_number_79</td>\
+        \ \n</tr> \n      <tr>\n    <td>driving_license_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Driving License Document Link</td>\n\
+        \      <td>[&quot;driving_license_link_10&quot;, &quot;driving_license_link_68&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>passport_number</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Passport Number of the CoApplicant</td>\n\
+        \      <td>passport_number_26</td> \n</tr> \n      <tr>\n    <td>passport_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>Passport Document\
+        \ Link</td>\n      <td>[&quot;passport_link_27&quot;, &quot;passport_link_50&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>video_kyc_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Video KYC of the CoApplicant</td>\n\
+        \      <td>[&quot;video_kyc_link_52&quot;, &quot;video_kyc_link_59&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>video_kyc_profile_id</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Required if video KYC is done.\
+        \ Profile ID of the case as per the video KYC vendor</td>\n      <td>video_kyc_profile_id_90</td>\
+        \ \n</tr> \n      <tr>\n    <td>video_kyc_account_id</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Required if video KYC is done.\
+        \ Account ID of the case as per the video KYC vendor</td>\n      <td>video_kyc_account_id_24</td>\
+        \ \n</tr> \n      <tr>\n    <td>video_kyc_key</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Required if video KYC is done.\
+        \ Key as per the video KYC vendor</td>\n      <td>video_kyc_key_44</td> \n\
+        </tr> \n      <tr>\n    <td>other_kyc_number</td>\n    <td>string</td>\n \
+        \   <td></td>\n    <td>false</td>\n    <td>KYC Number of the CoApplicant</td>\n\
+        \      <td>other_kyc_number_62</td> \n</tr> \n      <tr>\n    <td>other_kyc_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>KYC Image\
+        \ of the CoApplicant</td>\n      <td>[&quot;other_kyc_link_67&quot;, &quot;other_kyc_link_98&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>rent_agreement_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Rent Agreement Document Link</td>\n\
+        \      <td>[&quot;rent_agreement_link_90&quot;, &quot;rent_agreement_link_12&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>utility_bills_link</td>\n    <td>array</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Utility Bills Copies (If any)</td>\n\
+        \      <td>[&quot;utility_bills_link_77&quot;, &quot;utility_bills_link_79&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>photo_link</td>\n    <td>array</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td>Photo Image of the CoApplicant</td>\n      <td>[&quot;photo_link_98&quot;,\
+        \ &quot;photo_link_66&quot;]</td> \n</tr> \n      <tr>\n    <td>bureau_score</td>\n\
+        \    <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Bureau Score\
+        \ of the CoApplicant</td>\n      <td>726</td> \n</tr> \n      <tr>\n    <td>bureau_report_link</td>\n\
+        \    <td>array</td>\n    <td></td>\n    <td>false</td>\n    <td>CoApplicant&#39;s\
+        \ Bureau Report PDF</td>\n      <td>[&quot;bureau_report_link_96&quot;, &quot;bureau_report_link_88&quot;]</td>\
+        \ \n</tr> \n      <tr>\n    <td>partner_score_on_the_coapplicant</td>\n  \
+        \  <td>integer</td>\n    <td></td>\n    <td>false</td>\n    <td>Score Captured\
+        \ by the Partner</td>\n      <td>15</td> \n</tr> \n  </tbody>\n      </table>\n\
+        \n\n<h4>InsuranceDetails</h4>\n\n<table>\n  <thead>\n    <tr>\n      <th>Field</th>\n\
+        \      <th>Type</th>\n      <th>Format</th>\n      <th>Required</th>\n   \
+        \   <th>Description</th>\n      <th>Example</th>\n    </tr>\n  </thead>\n\
+        \  <tbody>      <tr>\n    <td>insurance_type</td>\n    <td>string</td>\n \
+        \   <td></td>\n    <td>true</td>\n    <td>Credit / Assest</td>\n      <td>insurance_type_25</td>\
+        \ \n</tr> \n      <tr>\n    <td>insurer_name</td>\n    <td>string</td>\n \
+        \   <td></td>\n    <td>false</td>\n    <td></td>\n      <td>insurer_name_59</td>\
+        \ \n</tr> \n      <tr>\n    <td>nominee_details</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Name of the Nominee</td>\n   \
+        \   <td>nominee_details_11</td> \n</tr> \n      <tr>\n    <td>relationship</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>false</td>\n    <td>Relationship\
+        \ of the Nominee</td>\n      <td>relationship_98</td> \n</tr> \n      <tr>\n\
+        \    <td>premium</td>\n    <td>number</td>\n    <td>float</td>\n    <td>false</td>\n\
+        \    <td>Premium Amount</td>\n      <td>7.687037411900058</td> \n</tr> \n\
+        \      <tr>\n    <td>insurance_amount</td>\n    <td>number</td>\n    <td>float</td>\n\
+        \    <td>false</td>\n    <td>Total Insurance Amount</td>\n      <td>4.488883404960763</td>\
+        \ \n</tr> \n      <tr>\n    <td>policy_number</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td>Policy Number</td>\n      <td>policy_number_68</td>\
+        \ \n</tr> \n  </tbody>\n      </table>\n\n\n<h4>References</h4>\n\n<table>\n\
+        \  <thead>\n    <tr>\n      <th>Field</th>\n      <th>Type</th>\n      <th>Format</th>\n\
+        \      <th>Required</th>\n      <th>Description</th>\n      <th>Example</th>\n\
+        \    </tr>\n  </thead>\n  <tbody>      <tr>\n    <td>name</td>\n    <td>string</td>\n\
+        \    <td></td>\n    <td>false</td>\n    <td></td>\n      <td>name_63</td>\
+        \ \n</tr> \n      <tr>\n    <td>address</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>false</td>\n    <td></td>\n      <td>address_60</td> \n</tr> \n \
+        \     <tr>\n    <td>pincode</td>\n    <td>string</td>\n    <td></td>\n   \
+        \ <td>false</td>\n    <td></td>\n      <td>pincode_63</td> \n</tr> \n    \
+        \  <tr>\n    <td>phone</td>\n    <td>string</td>\n    <td></td>\n    <td>false</td>\n\
+        \    <td></td>\n      <td>phone_97</td> \n</tr> \n  </tbody>\n      </table>\n\
+        \n\n<h4>DisbursementAccounts</h4>\n\n<table>\n  <thead>\n    <tr>\n      <th>Field</th>\n\
+        \      <th>Type</th>\n      <th>Format</th>\n      <th>Required</th>\n   \
+        \   <th>Description</th>\n      <th>Example</th>\n    </tr>\n  </thead>\n\
+        \  <tbody>      <tr>\n    <td>account_no</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Account number of the bank where disbursement\
+        \ needs to be done</td>\n      <td>account_no_96</td> \n</tr> \n      <tr>\n\
+        \    <td>ifsc_code</td>\n    <td>string</td>\n    <td></td>\n    <td>true</td>\n\
+        \    <td>Bank IFSC where disbursement needs to be done</td>\n      <td>ifsc_code_18</td>\
+        \ \n</tr> \n      <tr>\n    <td>account_type</td>\n    <td>string</td>\n \
+        \   <td></td>\n    <td>true</td>\n    <td>Savings / Current / Overdraft /\
+        \ CC</td>\n      <td>account_type_34</td> \n</tr> \n      <tr>\n    <td>account_name</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td>Bank account\
+        \ name where disbursement needs to be done</td>\n      <td>account_name_87</td>\
+        \ \n</tr> \n      <tr>\n    <td>entity_type</td>\n    <td>string</td>\n  \
+        \  <td></td>\n    <td>true</td>\n    <td>Dealer / Sub-Dealer / Originator\
+        \ / Existing Lender / End Customer</td>\n      <td>entity_type_14</td> \n\
+        </tr> \n      <tr>\n    <td>bank_name</td>\n    <td>string</td>\n    <td></td>\n\
+        \    <td>true</td>\n    <td>Name of the bank where disbursement needs to be\
+        \ done</td>\n      <td>bank_name_55</td> \n</tr> \n      <tr>\n    <td>bank_branch_name</td>\n\
+        \    <td>string</td>\n    <td></td>\n    <td>true</td>\n    <td></td>\n  \
+        \    <td>bank_branch_name_83</td> \n</tr> \n      <tr>\n    <td>amount</td>\n\
+        \    <td>number</td>\n    <td>float</td>\n    <td>true</td>\n    <td>Amount\
+        \ to be transferred to particular Vendor/Borrower</td>\n      <td>6.292367337459747</td>\
+        \ \n</tr> \n  </tbody>\n      </table>\n\n   \n\n\n#### Response Codes\n\n\
+        <table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"\
+        hsides\">\n  <thead>\n    <tr>\n      <th scope=\"col\" class=\"org-right\"\
+        >Code</th>\n      <th scope=\"col\" class=\"org-left\">Message</th>\n    \
+        \  <th scope=\"col\" class=\"org-left\">Reason</th>\n    </tr>\n  </thead>\n\
+        \n  <tbody>\n    <tr>\n      <td class=\"org-right\">201</td>\n      <td class=\"\
+        org-left\">Created</td>\n      <td class=\"org-left\">Success</td>\n    </tr>\n\
+        \    <tr>\n      <td class=\"org-right\">400</td>\n      <td class=\"org-left\"\
+        >Bad Request</td>\n      <td class=\"org-left\"><ul><li>Invalid request format</li>\n\
+        \          <li>Missing required params</li>\n      </ul></td>\n    </tr>\n\
+        \    <tr>\n      <td class=\"org-right\">401</td>\n      <td class=\"org-left\"\
+        >Unauthorized</td>\n      <td class=\"org-left\">Invalid API Key</td>\n  \
+        \  </tr>\n    <tr>\n      <td class=\"org-right\">422</td>\n      <td class=\"\
+        org-left\">Unprocessable Entity</td>\n      <td class=\"org-left\"><ul>\n\
+        \          <li>Client Loan Already Taken</li>\n          <li>Product Not Found</li>\n\
+        \          <li>Document not found/accessible</li>\n      </td>\n    </tr>\n\
+        \    <tr>\n      <td class=\"org-right\">500</td>\n      <td class=\"org-left\"\
+        >Internal Server Error</td>\n      <td class=\"org-left\">Error occurred in\
+        \ the backend</td>\n    </tr>\n  </tbody>\n</table>\n\n\n ## INDIAN STATES\n\
+        \n- jammu_kashmir\n- himachal_pradesh\n- punjab\n- chandigarh\n- uttaranchal\n\
+        - haryana\n- delhi\n- rajasthan\n- uttar_pradesh\n- bihar\n- sikkim\n- arunachal_pradesh\n\
+        - nagaland\n- manipur\n- mizoram\n- tripura\n- meghalaya\n- assam\n- west_bengal\n\
+        - jharkhand\n- orissa\n- chhattisgarh\n- madhya_pradesh\n- gujarat\n- daman_diu\n\
+        - dadra_nagar_haveli\n- maharashtra\n- andhra_pradesh\n- karnataka\n- goa\n\
+        - lakshadweep\n- kerala\n- tamil_nadu\n- pondicherry\n- andaman_nicobar_islands\n\
+        - telangana"
+      operationId: create-loan
+      parameters:
+      - description: Name of the client
+        explode: false
+        in: path
+        name: client_name
+        required: true
+        schema:
+          example: upwards
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example: {}
+            schema:
+              properties: {}
+              required:
+              - client_loan_id
+              - interest_rate
+              type: object
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              example:
+                client_loan_id: AB001
+                status: new
+              schema:
+                $ref: '#/components/schemas/Loan'
+          description: 201 Created
+        "400":
+          content:
+            application/json:
+              example:
+                error:
+                  message: Missing Reuired params
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+          description: 400 Bad Request
+        "401":
+          content:
+            application/json:
+              example:
+                error:
+                  message: Not Authenticated
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+          description: 401 Unauthorized
+        "422":
+          content:
+            application/json:
+              example:
+                error:
+                  message: Client loan is already taken
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+          description: 422 Unprocessable Entity (Client Loan ID Already Taken)
+        "500":
+          content:
+            application/json:
+              example:
+                error:
+                  message: Something went wrong
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+          description: 500 Internal Server Error
+      summary: Create Loan
+      tags:
+      - Loan
+      x-contentType: application/json
+      x-accepts: application/json
+  /clients/{client_name}/api/v2/loans/{loan_id}:
+    get:
+      description: |
+        # Get Loan Details
+
+        This API endpoint can be used to get the loan details.
+        The possible loan status values are
+
+        ## Loan Status
+
+        <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+        <colgroup>
+        <col  class="org-left" />
+
+        <col  class="org-left" />
+        </colgroup>
+        <thead>
+        <tr>
+        <th scope="col" class="org-left">State</th>
+        <th scope="col" class="org-left">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+        <td class="org-left">new</td>
+        <td class="org-left">When the loan is created</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-left">approved</td>
+        <td class="org-left">When the loan is approved by the investor</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-left">rejected</td>
+        <td class="org-left">When the loan is rejected by the investor</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-left">agreement_signed</td>
+        <td class="org-left">When end borrower agreement/EKYC is signed/collected</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-left">disbursement_ready</td>
+        <td class="org-left">When investor is ready to disburse the funds</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-left">dropped</td>
+        <td class="org-left">When the loan gets rejected by the investor at agreement signed state</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-left">disbursed</td>
+        <td class="org-left">When the loan moves to the disbursed state by the investor from agreement signed state</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-left">matured</td>
+        <td class="org-left">After closure of all installments, the loan moves to the matured state</td>
+        </tr>
+        </tbody>
+        </table>
+
+
+        #### Response Codes
+
+        <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+        <colgroup>
+        <col  class="org-right" />
+
+        <col  class="org-left" />
+
+        <col  class="org-left" />
+        </colgroup>
+        <thead>
+        <tr>
+        <th scope="col" class="org-right">Code</th>
+        <th scope="col" class="org-left">Message</th>
+        <th scope="col" class="org-left">Reason</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+        <td class="org-right">200</td>
+        <td class="org-left">OK</td>
+        <td class="org-left">Success</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-right">401</td>
+        <td class="org-left">Unauthorized</td>
+        <td class="org-left">Invalid API Key</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-right">404</td>
+        <td class="org-left">Not found</td>
+        <td class="org-left">Loan not found</td>
+        </tr>
+
+
+        <tr>
+        <td class="org-right">500</td>
+        <td class="org-left">Internal Server Error</td>
+        <td class="org-left">Error occurred in the backend</td>
+        </tr>
+        </tbody>
+        </table>
+      operationId: get-loan-details
+      parameters:
+      - description: Name of the client
+        explode: false
+        in: path
+        name: client_name
+        required: true
+        schema:
+          example: upwards
+          type: string
+        style: simple
+      - description: Client Loan ID as provided during loan creation
+        explode: false
+        in: path
+        name: loan_id
+        required: true
+        schema:
+          example: AB001
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 92135
+                reference_no: null
+                paid_date: 2020-09-22T00:00:00.000Z
+                principal: 50249
+                interest: 502
+                other_charges: 0
+                amount: 50751
+                comment: Repayment
+                created_at: 2020-09-23T04:26:24.133Z
+                updated_at: 2020-09-23T04:26:24.133Z
+                overdue_charges: 0
+                penalty_charges: 0
+                fee_charges: 0
+                bounce_charges: 0
+                investor_transfer_date: 2020-09-22
+                emi_closed: true
+                foreclosure: false
+                payment_type: normal
+                installment_no: 2
+              - id: 92133
+                reference_no: null
+                paid_date: 2020-09-22T00:00:00.000Z
+                principal: 49751
+                interest: 1000
+                other_charges: 0
+                amount: 50751
+                comment: Repayment
+                created_at: 2020-09-22T07:57:42.009Z
+                updated_at: 2020-09-22T07:57:42.009Z
+                overdue_charges: 0
+                penalty_charges: 0
+                fee_charges: 0
+                bounce_charges: 0
+                investor_transfer_date: 2020-09-22
+                emi_closed: true
+                foreclosure: false
+                payment_type: normal
+                installment_no: 1
+              schema:
+                $ref: '#/components/schemas/GetPaymentResponse'
+          description: 200 OK
+        "401":
+          content:
+            application/json:
+              example:
+                error:
+                  message: Not Authenticated
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+          description: 401 Unauthorized
+        "404":
+          content:
+            application/json:
+              example:
+                error:
+                  message: Loan Not Found
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+          description: 404 Not Found
+        "500":
+          content:
+            application/json:
+              example:
+                error:
+                  message: Something went wrong
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+          description: 500 Internal Server Error
+      summary: Get Loan Details
+      tags:
+      - Loan
+      x-accepts: application/json
+components:
+  parameters: {}
+  responses:
+    CreateLoan201:
+      content:
+        application/json:
+          example:
+            client_loan_id: AB001
+            status: new
+          schema:
+            properties:
+              client_loan_id:
+                description: Unique identifier for the loan
+                type: string
+              status:
+                description: Current status of the loan
+                type: string
+            type: object
+      description: 201 Created
+    CreateLoan422:
+      content:
+        application/json:
+          example:
+            error:
+              message: Client loan is already taken
+          schema:
+            $ref: '#/components/schemas/inline_response_400'
+      description: 422 Unprocessable Entity (Client Loan ID Already Taken)
+    BadRequest:
+      content:
+        application/json:
+          example:
+            error:
+              message: Missing Reuired params
+          schema:
+            $ref: '#/components/schemas/inline_response_400'
+      description: 400 Bad Request
+    Unauthorized:
+      content:
+        application/json:
+          example:
+            error:
+              message: Not Authenticated
+          schema:
+            $ref: '#/components/schemas/inline_response_400'
+      description: 401 Unauthorized
+    NotFound:
+      content:
+        application/json:
+          example:
+            error:
+              message: Loan Not Found
+          schema:
+            $ref: '#/components/schemas/inline_response_400'
+      description: 404 Not Found
+    InternalServerError:
+      content:
+        application/json:
+          example:
+            error:
+              message: Something went wrong
+          schema:
+            $ref: '#/components/schemas/inline_response_400'
+      description: 500 Internal Server Error
+    "200Success":
+      content:
+        application/json:
+          example:
+            success: true
+          schema:
+            properties:
+              success:
+                type: boolean
+            type: object
+      description: 200 OK
+    GetLoan200:
+      content:
+        application/json:
+          example:
+            client_loan_id: AB001
+            product_id: 1
+            principal_amount: 1000.0
+            interest_rate: 14.0
+            tenure: 2
+            tenure_frequency: monthly
+            cibil_score: 0
+            purpose: ""
+            repayment_frequency: monthly
+            number_of_repayments: 2
+            status: agreement_signed
+            principal_outstanding: 1000.0
+            reject_reason: null
+            applicants:
+            - id: 455
+              first_name: Smith
+          schema:
+            properties:
+              client_loan_id:
+                description: Unique identifier for the loan
+                type: string
+              product_id:
+                description: Product ID
+                type: integer
+              principal_amount:
+                description: Principal amount for the loan
+                format: float
+                type: number
+              interest_rate:
+                description: Interest rate in percentage
+                format: float
+                type: number
+              tenure:
+                description: Tenure of the loan
+                type: integer
+              tenure_frequency:
+                description: Tenure Frequency
+                type: string
+              no_of_repayments:
+                description: Number of Repayments
+                type: integer
+              status:
+                description: Current status of the loan
+                type: string
+              principal_outstanding:
+                description: current POS of the loan
+                format: float
+                type: number
+              reject_reason:
+                description: Reason for rejecting loan
+                type: string
+              applicants:
+                description: Array of applicant details
+                items:
+                  properties:
+                    id:
+                      description: ID of the applicant. To be used when updating the
+                        applicant details
+                      type: integer
+                    fisrt_name:
+                      description: First name of the applicant
+                      type: string
+                  type: object
+                type: array
+            type: object
+      description: 200 OK
+    AgreementSigned200:
+      content:
+        application/json:
+          example:
+            client_loan_id: AB001
+            status: agreement_signed
+          schema:
+            properties:
+              client_loan_id:
+                description: Unique identifier for the loan
+                type: string
+              status:
+                description: Current status of the loan
+                type: string
+            type: object
+      description: 200 OK
+    GetRS200:
+      content:
+        application/json:
+          example:
+          - installment_no: "1"
+            due_date: 05-09-2019
+            principal: "3193"
+            interest: "384"
+            emi: "3577"
+            pos: "16807"
+          - installment_no: "2"
+            due_date: 05-10-2019
+            principal: "3232"
+            interest: "345"
+            emi: "3577"
+            pos: "13575"
+          - installment_no: "3"
+            due_date: 05-11-2019
+            principal: "3289"
+            interest: "288"
+            emi: "3577"
+            pos: "10286"
+          schema:
+            items:
+              properties:
+                installment_no:
+                  type: integer
+                due_date:
+                  format: date
+                  type: string
+                principal:
+                  format: float
+                  type: number
+                interest:
+                  format: float
+                  type: number
+                emi:
+                  format: float
+                  type: number
+                pos:
+                  format: float
+                  type: number
+              type: object
+            type: array
+      description: 200 OK
+    CreateRS201:
+      content:
+        application/json:
+          example:
+            client_loan_id: AB001
+            repayment_schedules:
+            - installment_no: "1"
+              due_date: 05-09-2019
+              principal: "3193"
+              interest: "384"
+              emi: "3577"
+              pos: "16807"
+            - installment_no: "2"
+              due_date: 05-10-2019
+              principal: "3232"
+              interest: "345"
+              emi: "3577"
+              pos: "13575"
+            - installment_no: "3"
+              due_date: 05-11-2019
+              principal: "3289"
+              interest: "288"
+              emi: "3577"
+              pos: "10286"
+          schema:
+            properties:
+              client_loan_id:
+                description: Client loan ID used during loan creation
+                type: string
+              repayment_schedules:
+                description: Array of Repayment Schedules
+                items:
+                  properties:
+                    installment_no:
+                      type: integer
+                    due_date:
+                      format: date
+                      type: string
+                    principal:
+                      format: float
+                      type: number
+                    interest:
+                      format: float
+                      type: number
+                    emi:
+                      format: float
+                      type: number
+                    pos:
+                      format: float
+                      type: number
+                  type: object
+                type: array
+            type: object
+      description: 201 Created
+    CreateCollection201:
+      content:
+        application/json:
+          example:
+            client_loan_id: LA00175
+            amount: 10330.0
+            installment_no: 1
+            emi_closed: "N"
+          schema:
+            properties:
+              client_loan_id:
+                description: Client_loan_id as provided during loan creation
+                type: string
+              amount:
+                description: Amount
+                format: float
+                type: number
+              installment_no:
+                description: Installment no
+                type: integer
+              emi_closed:
+                description: Emi closed flag
+                type: string
+            type: object
+      description: 201 Created
+  schemas:
+    GetPaymentResponse:
+      example:
+        product_id: 0
+        applicants:
+        - fisrt_name: fisrt_name
+          id: 7
+        - fisrt_name: fisrt_name
+          id: 7
+        no_of_repayments: 5
+        interest_rate: 1.4658129
+        principal_amount: 6.0274563
+        tenure_frequency: tenure_frequency
+        reject_reason: reject_reason
+        client_loan_id: client_loan_id
+        tenure: 5
+        principal_outstanding: 2.302136
+        status: status
+      properties:
+        client_loan_id:
+          description: Unique identifier for the loan
+          type: string
+        product_id:
+          description: Product ID
+          type: integer
+        principal_amount:
+          description: Principal amount for the loan
+          format: float
+          type: number
+        interest_rate:
+          description: Interest rate in percentage
+          format: float
+          type: number
+        tenure:
+          description: Tenure of the loan
+          type: integer
+        tenure_frequency:
+          description: Tenure Frequency
+          type: string
+        no_of_repayments:
+          description: Number of Repayments
+          type: integer
+        status:
+          description: Current status of the loan
+          type: string
+        principal_outstanding:
+          description: current POS of the loan
+          format: float
+          type: number
+        reject_reason:
+          description: Reason for rejecting loan
+          type: string
+        applicants:
+          description: Array of applicant details
+          items:
+            $ref: '#/components/schemas/GetPaymentResponse_applicants'
+          type: array
+      type: object
+    Loan:
+      example:
+        id: 0
+        client_loan_id: client_loan_id
+        status: status
+      properties:
+        id:
+          format: int64
+          type: integer
+        status:
+          title: statusTitle
+          type: string
+        client_loan_id:
+          title: loanTitle
+          type: string
+      type: object
+    inline_response_400_error:
+      properties:
+        message:
+          type: string
+      type: object
+    inline_response_400:
+      properties:
+        error:
+          $ref: '#/components/schemas/inline_response_400_error'
+      type: object
+    GetPaymentResponse_applicants:
+      example:
+        fisrt_name: fisrt_name
+        id: 7
+      properties:
+        id:
+          description: ID of the applicant. To be used when updating the applicant
+            details
+          type: integer
+        fisrt_name:
+          description: First name of the applicant
+          type: string
+      type: object
+  securitySchemes:
+    api_key:
+      in: header
+      name: api_key
+      type: apiKey
+
